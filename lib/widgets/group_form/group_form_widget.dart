@@ -1,29 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:todo/widgets/group_form/group_form_widget_model.dart';
 
-class GroupFormWidget extends StatefulWidget {
-
+class GroupFormWidget extends StatelessWidget {
   const GroupFormWidget({super.key});
 
   @override
-  State<GroupFormWidget> createState() => _GroupFormWidgetState();
-}
-
-class _GroupFormWidgetState extends State<GroupFormWidget> {
-  final model = GroupFormWidgetModel();
-
-  @override
   Widget build(BuildContext context) {
-    return GroupFormWidgetModelProvider(model: model, child: const _GroupFormWidgetBody());
+    return ChangeNotifierProvider(
+      create: (context) => GroupFormWidgetModel(),
+      child: const _GroupFormWidgetBody(),
+    );
   }
 }
 
 class _GroupFormWidgetBody extends StatelessWidget {
-  const _GroupFormWidgetBody({super.key});  
+  const _GroupFormWidgetBody();
 
   @override
   Widget build(BuildContext context) {
-    final model =  GroupFormWidgetModelProvider.read(context)?.model;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Group'),
@@ -35,7 +30,8 @@ class _GroupFormWidgetBody extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => model?.saveGroup(context),
+        onPressed: () =>
+            context.read<GroupFormWidgetModel>().saveGroup(context),
         child: const Icon(Icons.done),
       ),
     );
@@ -43,21 +39,19 @@ class _GroupFormWidgetBody extends StatelessWidget {
 }
 
 class _GroupNameWidget extends StatelessWidget {
-  const _GroupNameWidget({
-    super.key,
-  });
+  const _GroupNameWidget();
 
   @override
   Widget build(BuildContext context) {
-    final model =  GroupFormWidgetModelProvider.read(context)?.model;
+    final model = context.read<GroupFormWidgetModel>();
     return TextField(
       autofocus: true,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
         hintText: 'Add new group',
       ),
-      onChanged: (value) => model?.groupName = value,
-      onEditingComplete: () => model?.saveGroup(context),
+      onChanged: (value) => model.groupName = value,
+      onEditingComplete: () => model.saveGroup(context),
     );
   }
 }

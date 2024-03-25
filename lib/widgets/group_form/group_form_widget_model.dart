@@ -2,42 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todo/domain/entity/group.dart';
 
-class GroupFormWidgetModel{
+class GroupFormWidgetModel extends ChangeNotifier {
   var groupName = '';
 
   void saveGroup(BuildContext context) async {
     if (groupName.isEmpty) return;
-    if(!Hive.isAdapterRegistered(1)){
+    if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(GroupAdapter());
     }
     final box = await Hive.openBox<Group>('group_box');
+    
     final group = Group(name: groupName);
     await box.add(group);
-    Navigator.of(context).pop();    
-  }
-}
-
-class GroupFormWidgetModelProvider extends InheritedWidget {
-  final GroupFormWidgetModel model;
-
-  const GroupFormWidgetModelProvider(
-      {Key? key, required Widget child, required this.model})
-      : super(key: key, child: child);
-
-  static GroupFormWidgetModelProvider? watch(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<GroupFormWidgetModelProvider>();
-  }
-
-  static GroupFormWidgetModelProvider? read(BuildContext context) {
-    final widget = context
-        .getElementForInheritedWidgetOfExactType<GroupFormWidgetModelProvider>()
-        ?.widget;
-    return widget is GroupFormWidgetModelProvider ? widget : null;
-  }
-
-  @override
-  bool updateShouldNotify(GroupFormWidgetModelProvider oldWidget) {
-    return true;
+    // ignore: use_build_context_synchronously
+    Navigator.of(context).pop();
   }
 }

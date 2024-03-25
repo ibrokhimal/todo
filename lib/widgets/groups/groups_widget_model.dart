@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -9,24 +11,37 @@ class GroupsWidgetModel extends ChangeNotifier {
   List<Group> get groups => _groups.toList();
 
   GroupsWidgetModel() {
-    _setup();    
+    _setup();
   }
 
-  void editGroup(int index) async {
-    final box = await Hive.openBox<Group>('group_box');
+  void editGroup(int index, BuildContext context) {
+    Navigator.of(context).pushNamed('/groups/form_edit', arguments: index);
   }
 
   void deleteGroup(int index) async {
     if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(GroupAdapter());
     }
+    
     final box = await Hive.openBox<Group>('group_box');
     await box.deleteAt(index);
-    box.compact();
   }
 
-  void showForm(BuildContext context) {
+  void showForm(BuildContext context) {    
     Navigator.of(context).pushNamed('/groups/form');
+  }
+
+  void showTasks(BuildContext context, int index) async {
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(GroupAdapter());
+    }
+
+    final box = await Hive.openBox<Group>('group_box');
+    final groupKey = box.keyAt(index) as int;
+    unawaited(
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pushNamed('/groups/tasks',arguments: groupKey),
+    );
   }
 
   void readGroupsFormHive(Box<Group> box) {
@@ -43,25 +58,5 @@ class GroupsWidgetModel extends ChangeNotifier {
     readGroupsFormHive(box);
 
     box.listenable().addListener(() => readGroupsFormHive(box));
-  }
-}
-
-class GroupsWidgetModelProvider extends InheritedNotifier {
-  final GroupsWidgetModel model;
-
-  const GroupsWidgetModelProvider(
-      {Key? key, required Widget child, required this.model})
-      : super(key: key, child: child, notifier: model);
-
-  static GroupsWidgetModelProvider? watch(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<GroupsWidgetModelProvider>();
-  }
-
-  static GroupsWidgetModelProvider? read(BuildContext context) {
-    final widget = context
-        .getElementForInheritedWidgetOfExactType<GroupsWidgetModelProvider>()
-        ?.widget;
-    return widget is GroupsWidgetModelProvider ? widget : null;
   }
 }
